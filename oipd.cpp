@@ -37,6 +37,7 @@ using namespace std;
 	
 bool globalrun=true;
 const char* sniff_dev = 0;
+//const char* sniff_dev = "wlan0";
 //can use insert(), erase()
 set<SDL_Thread*> clients;
 
@@ -61,10 +62,12 @@ int sniff(void* a)
 	char errbuf[PCAP_ERRBUF_SIZE];
 	if (!dev)
 		dev = pcap_lookupdev(errbuf);
+        cout << "Looked up device: " << dev << "\n";
 	if (clientrun)
 	{
 		//open up the device
 		handle = pcap_open_live(dev, SNAPLEN, 1, 100, errbuf);
+        cout << "Starting sniffing on dev " << dev << "\n";
 		if (!handle)
 		{
 			cerr << "Unable to open " << dev << ": " << errbuf << endl;
@@ -76,6 +79,7 @@ int sniff(void* a)
 		cerr << "Unable to open default device: " << errbuf << endl;
 		cerr << "Attempting to use eth0\n";
 		dev = "eth0";
+		//dev = "wlan0";
 	}
 	if (self->opts["filter"] != "")
 	{
@@ -170,8 +174,11 @@ void sigcatch(int s)
 
 int main(int argc, char** argv)
 {
+    cout << "Welcome\n";
 	if (argc > 1)
 		sniff_dev = argv[1];
+
+    cout << "Device: " << sniff_dev << "\n";
 			
 	signal(SIGINT, sigcatch);
 	//get a device to read from
