@@ -37,13 +37,14 @@
 #include "capreader.h"
 using namespace std;
 
-#define OPTSIZE 4
+#define OPTSIZE 5
 const char* validopts[OPTSIZE][4] = {
 	/*short, long, description, required*/
 	{"s", "server", "The hostname or ip address of the server.",NULL},
 	{"p", "port", "The port to connect to. Defaults to 12751.",NULL},
 	{"f", "filter", "The libpcap filter to apply to the stream.",NULL},
-	{"e", "speed", "How fast to read the pcap file. 1000 is normal, 100 is 10x, 10 is 100x, 1 is 1000x",NULL}
+	{"e", "speed", "How fast to read the pcap file. 1000 is normal, 100 is 10x, 10 is 100x, 1 is 1000x",NULL},
+	{"c", "pcap", "Pcap file to read",NULL}
 };
 
 const char* optlookup(const char * o)
@@ -256,7 +257,9 @@ void newpcapfile(bool selected, void* arg)
 	pcapopts* self = (pcapopts*)arg;
 	if (*(self->plist))
 		delete *(self->plist);
+
 	*(self->plist) = new capreader(self->pcapfile->getString().c_str());
+
 	SDL_WM_SetCaption((string("PCAP: ") + self->pcapfile->getString()).c_str(), "Oip");
 	self->mnu->activate();
 }
@@ -330,6 +333,15 @@ int main(int argc, char* argv[])
 	opts.erase("server");
 	particlemanager pm;
 
+    // Pcap file passed by argument    
+	string pcap_file_to_read = opts["pcap"];
+	opts.erase("pcap");
+
+	string speed = opts["speed"];
+
+
+
+
 	//initialize the graphics
 	SDL_Surface* screen = initsdl();
 	if (!screen)
@@ -390,6 +402,7 @@ int main(int argc, char* argv[])
 	//the capreader menu
 	gui::textbox pcapfile("mnubg.png");
 	pcapfile.setFont(mnufont);
+    pcapfile.setString(pcap_file_to_read.c_str());
 	gui::label pcaplabel(50, 24);
 	pcaplabel.setFont(mnufont);
 	pcaplabel.setString("File:");
@@ -435,6 +448,13 @@ int main(int argc, char* argv[])
 	
 
 
+	if (speed == "")
+	{
+        speed = "1000";
+    }
+   
+
+
 	//and lastly, try to connect to the server
 	if (server != "")
 	{
@@ -446,99 +466,102 @@ int main(int argc, char* argv[])
 	int px, py;
 	while(run)
 	{
-	
-		SDL_Event event;
-		while(SDL_PollEvent(&event))
-		{
-			switch (event.type)
-			{
-			case SDL_QUIT: 
-				run = false;
-				break;
-			case SDL_KEYDOWN:
-				if (event.key.keysym.sym == SDLK_ESCAPE)
-					run = false;
-				if (event.key.keysym.sym == '`')
-					mnu.activate();
-				else
-					widgets.keydown(event.key);
-				break;
-			case SDL_KEYUP:
-				widgets.keyup(event.key);
-				break;
-			case SDL_VIDEORESIZE:
-				resize(event.resize.w, event.resize.h);
-				chartheight = event.resize.h/3;
-				histo.resize(event.resize.w, chartheight);
-				break;
-			case SDL_MOUSEBUTTONDOWN:
-				//give the widgets the first crack at events
-				if (!widgets.mousedown(event.button))
-				{
-					if (event.button.button == SDL_BUTTON_RIGHT)
-					{
-						entity* e = pm.bycoords(event.button.x, event.button.y);
-						/*
-						if (e)
-							e->moving = !e->moving;
-						if (e)
-							e->resolve = !e->resolve;
-						*/
-						if (e)
-						{
-							px = event.button.x;
-							py = event.button.y;
-							resolve.setstate(!e->resolve);
-							pin.setstate(!e->moving);
-							resolve.arg = &e->resolve;
-							pin.arg = &e->moving;
-							popupmenu.show();
-						}
-						else
-							popupmenu.hide();
-					}
-					else if (event.button.button == SDL_BUTTON_LEFT)
-					{
-						cout << "left click\n";
-						//let the popup menu have it, if its there
-						if (popupmenu.shown())
-						{
-							event.button.x -= px;
-							event.button.y -= py;
-							if (!popupmenu.mousedown(event.button))
-								popupmenu.hide(); //hide if not clicked on
-						}
-						else
-							pm.mousedown(event.button.x, event.button.y);
-					}
-				}
-				break;
-			case SDL_MOUSEMOTION:
-				if (!widgets.mousemove(event.motion))
-					pm.mousemove(event.motion.x, event.motion.y);
-				break;
-			case SDL_MOUSEBUTTONUP:
-				if (popupmenu.shown() && event.button.button == SDL_BUTTON_LEFT)
-				{
-					event.button.x -= px;
-					event.button.y -= py;
-					popupmenu.mouseup(event.button);
-					popupmenu.hide();
-				}
-				else
-					if (!widgets.mouseup(event.button))
-						pm.mouseup();
-				break;
-			}
-		}
+
+        SDL_Event event;
+        while(SDL_PollEvent(&event))
+        {
+            switch (event.type)
+            {
+            case SDL_QUIT: 
+                run = false;
+                break;
+            case SDL_KEYDOWN:
+                if (event.key.keysym.sym == SDLK_ESCAPE)
+                    run = false;
+                if (event.key.keysym.sym == '`')
+                    mnu.activate();
+                else
+                    widgets.keydown(event.key);
+                break;
+            case SDL_KEYUP:
+                widgets.keyup(event.key);
+                break;
+            case SDL_VIDEORESIZE:
+                resize(event.resize.w, event.resize.h);
+                chartheight = event.resize.h/3;
+                histo.resize(event.resize.w, chartheight);
+                break;
+            case SDL_MOUSEBUTTONDOWN:
+                //give the widgets the first crack at events
+                if (!widgets.mousedown(event.button))
+                {
+                    if (event.button.button == SDL_BUTTON_RIGHT)
+                    {
+                        entity* e = pm.bycoords(event.button.x, event.button.y);
+                        /*
+                        if (e)
+                            e->moving = !e->moving;
+                        if (e)
+                            e->resolve = !e->resolve;
+                        */
+                        if (e)
+                        {
+                            px = event.button.x;
+                            py = event.button.y;
+                            resolve.setstate(!e->resolve);
+                            pin.setstate(!e->moving);
+                            resolve.arg = &e->resolve;
+                            pin.arg = &e->moving;
+                            popupmenu.show();
+                        }
+                        else
+                            popupmenu.hide();
+                    }
+                    else if (event.button.button == SDL_BUTTON_LEFT)
+                    {
+                        cout << "left click\n";
+                        //let the popup menu have it, if its there
+                        if (popupmenu.shown())
+                        {
+                            event.button.x -= px;
+                            event.button.y -= py;
+                            if (!popupmenu.mousedown(event.button))
+                                popupmenu.hide(); //hide if not clicked on
+                        }
+                        else
+                            pm.mousedown(event.button.x, event.button.y);
+                    }
+                }
+                break;
+            case SDL_MOUSEMOTION:
+                if (!widgets.mousemove(event.motion))
+                    pm.mousemove(event.motion.x, event.motion.y);
+                break;
+            case SDL_MOUSEBUTTONUP:
+                if (popupmenu.shown() && event.button.button == SDL_BUTTON_LEFT)
+                {
+                    event.button.x -= px;
+                    event.button.y -= py;
+                    popupmenu.mouseup(event.button);
+                    popupmenu.hide();
+                }
+                else
+                    if (!widgets.mouseup(event.button))
+                        pm.mouseup();
+                break;
+            }
+        }
+
+
+
 		double dt = now() - ti;
 		ti = now();
-		if (packetlist)
+        if (packetlist)
 		{
 			packetlist->copydata(histo);
 			//packetlist->dumpdata(pm);
             int numb;
-            istringstream ( opts["speed"] ) >> numb;
+            istringstream ( speed ) >> numb;
 			packetlist->dumpdata(pm, numb);
 		}
 		pm.process(dt);
