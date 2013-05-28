@@ -270,6 +270,8 @@ struct servopts
 	gui::textbox* server;
 	gui::textbox* port;
 	gui::textbox* filter;
+	gui::textbox* speed;
+	gui::textbox* pcap_file_to_read;
 	gui::option* mnu;
 	servopts(packetmanager*&pl, gui::textbox* s, gui::textbox*p, gui::textbox*f, gui::option* m)
 	:plist(&pl),server(s),port(p),filter(f),mnu(m) {}
@@ -464,6 +466,11 @@ int main(int argc, char* argv[])
 	double ti = now();
 	int chartheight = 128;
 	int px, py;
+
+    if (pcap_file_to_read != "") {
+       btnpcapfile.activate();
+    }
+
 	while(run)
 	{
 
@@ -478,8 +485,10 @@ int main(int argc, char* argv[])
             case SDL_KEYDOWN:
                 if (event.key.keysym.sym == SDLK_ESCAPE)
                     run = false;
-                if (event.key.keysym.sym == '`')
+                if (event.key.keysym.sym == '!') 
                     mnu.activate();
+                else if (event.key.keysym.sym == ',')
+                    btnpcapfile.activate();
                 else
                     widgets.keydown(event.key);
                 break;
