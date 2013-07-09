@@ -35,6 +35,8 @@
 #include "gui/textbox.h"
 #include "chart.h"
 #include "capreader.h"
+#include "unistd.h"
+
 using namespace std;
 
 #define OPTSIZE 5
@@ -262,6 +264,8 @@ void newpcapfile(bool selected, void* arg)
 
 	SDL_WM_SetCaption((string("PCAP: ") + self->pcapfile->getString()).c_str(), "Oip");
 	self->mnu->activate();
+
+	cout << "OIPGUI.CPP; newcapfile(): PCAP file running!\n";
 }
 
 struct servopts
@@ -401,16 +405,23 @@ int main(int argc, char* argv[])
 	menu.addchild(connection, 0, 0);
 	menu.addchild(connectionmenu, 0, 30);
 	
-	//the capreader menu
+	//-------------------------------------------the capreader menu
 	gui::textbox pcapfile("mnubg.png");
 	pcapfile.setFont(mnufont);
+	pcapfile.setString("/home/wojtyla/VirtualEnviroment/Captures/test.pcap");
     if (pcap_file_to_read != "") {
         pcapfile.setString(pcap_file_to_read.c_str());
     }
+
+    //-------------------------------------------------------------------
 	gui::label pcaplabel(50, 24);
 	pcaplabel.setFont(mnufont);
 	pcaplabel.setString("File:");
 	pcapopts p(packetlist, &pcapfile, &mnu);
+
+	/*--------------------------------------------------------------
+	 * this is load button which tries to load the pcap file
+	 */
 	gui::button btnpcapfile("mnubg.png", "mnusel.png", newpcapfile, &p, 1);
 	btnpcapfile.setFont(mnufont);
 	btnpcapfile.setString("Load");
@@ -469,6 +480,7 @@ int main(int argc, char* argv[])
 	int chartheight = 128;
 	int px, py;
 
+
     if (pcap_file_to_read != "") {
        btnpcapfile.activate();
     }
@@ -485,6 +497,11 @@ int main(int argc, char* argv[])
                 run = false;
                 break;
             case SDL_KEYDOWN:
+            	if(event.key.keysym.sym == 'p'){
+            		cout << "OIPGUI.CPP: A keyboard -p- was pressed.\n";
+            		sleep(5);
+            	}
+
                 if (event.key.keysym.sym == SDLK_ESCAPE)
                     run = false;
                 if (event.key.keysym.sym == '!') 
@@ -530,6 +547,7 @@ int main(int argc, char* argv[])
                     }
                     else if (event.button.button == SDL_BUTTON_LEFT)
                     {
+                    	cout << "OIPGUI.CPP: i caught a click!\n";
                         cout << "left click\n";
                         //let the popup menu have it, if its there
                         if (popupmenu.shown())
@@ -567,6 +585,8 @@ int main(int argc, char* argv[])
 
 		double dt = now() - ti;
 		ti = now();
+		//cout << packetlist;
+		//cout << "\n";
         if (packetlist)
 		{
 			packetlist->copydata(histo);
