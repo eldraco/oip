@@ -485,12 +485,15 @@ int main(int argc, char* argv[])
        btnpcapfile.activate();
     }
 
-	while(run)
-	{
+    bool pause = false;
+
+
+	while(run)	{
 
         SDL_Event event;
         while(SDL_PollEvent(&event))
         {
+        	//cout << "something has happened\n";
             switch (event.type)
             {
             case SDL_QUIT: 
@@ -499,7 +502,11 @@ int main(int argc, char* argv[])
             case SDL_KEYDOWN:
             	if(event.key.keysym.sym == 'p'){
             		cout << "OIPGUI.CPP: A keyboard -p- was pressed.\n";
-            		sleep(5);
+            		if(pause == false){
+            			pause = true;
+            		}else{
+            			pause = false;
+            		}
             	}
 
                 if (event.key.keysym.sym == SDLK_ESCAPE)
@@ -582,7 +589,7 @@ int main(int argc, char* argv[])
         }
 
 
-
+        if(pause!=true){
 		double dt = now() - ti;
 		ti = now();
 		//cout << packetlist;
@@ -618,6 +625,7 @@ int main(int argc, char* argv[])
 		//don't bother going faster than twice the minimum framerate
 		if (dt * 1000 < MINRATE)
 			SDL_Delay(MINRATE - (int)(dt * 1000));
+        }
 	}
 
 	if (packetlist)
