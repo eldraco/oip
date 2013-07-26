@@ -58,6 +58,7 @@ TODO
 ----
 - Put the color references on the screen.
 - Advance and rewind the packets.
+- When the capturing is being speed up, fade out the ip names quicker.
 
 
 Thanks to the usu.edu for the project.

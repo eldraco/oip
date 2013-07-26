@@ -27,8 +27,10 @@
 #include "text.h"
 #include "namecache.h"
 #include "ips.h"
-#define FADERATE .25
-#define UNFADERATE .031250
+//#define FADERATE .25
+#define FADERATE .0001
+//#define UNFADERATE .031250
+#define UNFADERATE .000250
 
 const float MINMOVE = .0000001;
 
