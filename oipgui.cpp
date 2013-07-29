@@ -408,7 +408,7 @@ int main(int argc, char* argv[])
 	//-------------------------------------------the capreader menu
 	gui::textbox pcapfile("mnubg.png");
 	pcapfile.setFont(mnufont);
-	pcapfile.setString("/home/wojtyla/VirtualEnviroment/Captures/test.pcap");
+	pcapfile.setString("");
     if (pcap_file_to_read != "") {
         pcapfile.setString(pcap_file_to_read.c_str());
     }
